@@ -15,6 +15,14 @@
 
 #define TAILLEBUF 50 
 
+void convertAvionToBigEndian(struct Avion* ptrA) {
+  ptrA->coord.x = htonl(ptrA->coord.x);
+  ptrA->coord.y = htonl(ptrA->coord.y);
+  ptrA->coord.altitude = htonl(ptrA->coord.altitude);
+  ptrA->dep.cap = htonl(ptrA->dep.cap);
+  ptrA->dep.vitesse = htonl(ptrA->dep.vitesse);
+}
+
 void* multicastManager() {
   struct hostent *serveur_host;
   static struct sockaddr_in addr_serveur;
@@ -110,13 +118,17 @@ void* consoleAffichageManager() {
         printf("Demande d'avions recu !\n");
         debBufferAvion = (struct Avion*)(&(((int*)buffer)[1]));
         for(i = 0; i < nombreAvions; i++) {
+          printf("%d\n",(sizeof(int) + sizeof(struct Avion)));
+          printf("Nom de l'avion : %s\n",tabAvion[i].numero_vol);
           (*debBufferAvion) = tabAvion[i];
-          nb_octets = sendto(sock,buffer,(sizeof(int) + sizeof(struct Avion)),0,(struct sockaddr*)&addr_client,lg);
+          convertAvionToBigEndian(debBufferAvion);
+          nb_octets = sendto(sock,buffer,32,0,(struct sockaddr*)&addr_client,lg);
+          printf("nb_octets = %d\n",nb_octets);
         }
       }
       else {
       //Si l'entier recu dans la requete n'est pas le nombre d'avion
-        ((int*)buffer)[1] = nombreAvions; 
+        ((int*)buffer)[1] = htonl(nombreAvions); 
         nb_octets = sendto(sock,buffer,(sizeof(int)*2),0,(struct sockaddr*)&addr_client,lg);
       }
       break;
@@ -133,10 +145,44 @@ void* avionOrdreManager() {
 
 }
 
+int jeuDeTestBase() {
+  int rang;
+  struct Avion a;
+
+  a.numero_vol[0] = 'H';
+  a.numero_vol[1] = 'i';
+  a.numero_vol[2] = 'b';
+  a.numero_vol[3] = 'o';
+  a.numero_vol[4] = 'u';
+  a.numero_vol[5] = '\0';
+  a.coord.x = 50;
+  a.coord.y = 78;
+  a.coord.altitude = 589;
+  a.dep.cap = 30;
+  a.dep.vitesse = 250;
+  rang = getNouveauRang();
+  ecrireAvion(a,rang);
+
+  a.numero_vol[0] = 'C';
+  a.numero_vol[1] = 'h';
+  a.numero_vol[2] = 'o';
+  a.numero_vol[3] = 'u';
+  a.numero_vol[4] = 'e';
+  a.numero_vol[5] = '\0';
+  a.coord.x = 80;
+  a.coord.y = 98;
+  a.coord.altitude = 120;
+  a.dep.cap = 550;
+  a.dep.vitesse = 500;
+  rang = getNouveauRang();
+  ecrireAvion(a,rang);
+}
+
 int main() {
   pthread_t thread1;
   pthread_t thread2;
   initialiserBase();
+  jeuDeTestBase();
   printf("Hello world.\n");
   pthread_create(&thread1,NULL,multicastManager,NULL);
   pthread_create(&thread2,NULL,consoleAffichageManager,NULL);

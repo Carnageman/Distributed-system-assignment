@@ -35,7 +35,7 @@ public class UpdateVectorAvionThread extends Thread {
   @Override
   public void run() {
     Avion testAvion;
-    DatagramPacket packet = new DatagramPacket(new byte[28],28);
+    DatagramPacket packet = new DatagramPacket(new byte[50],50);
     DatagramPacket packetDemande = new DatagramPacket(new byte[4],4);
     java.net.InetAddress adr;
     byte[] magicnbr = java.nio.ByteBuffer.allocate(4).putInt(56841).array();
@@ -60,6 +60,7 @@ public class UpdateVectorAvionThread extends Thread {
           //Penser à tester si nbAvion == 0
           while(true) {
             socket.receive(packet);
+            System.out.println("Paquet recu, il fait " + packet.getLength());
             if (packet.getLength() ==  8) {
          	    nbAvion = java.nio.ByteBuffer.wrap(packet.getData(),4,4).getInt();
               System.out.println(nbAvion);
@@ -67,7 +68,10 @@ public class UpdateVectorAvionThread extends Thread {
               socket.send(packetDemande);
             }
             if (packet.getLength() == 32) {
+              System.out.println("Avion recu !");
+              System.out.println(packet.getData());
               testAvion = Avion.fromBytes(java.nio.ByteBuffer.wrap(packet.getData(),4,28).array());
+              testAvion.afficher_donnees();
               vecteurAvion.add(testAvion);
             }
           }
@@ -78,6 +82,11 @@ public class UpdateVectorAvionThread extends Thread {
         catch (IOException excp) {
           System.err.println("La socket a été fermée !");
           System.err.println("Erreur : " + excp.getMessage());
+        }
+        try {
+          Thread.sleep(5000);
+        }
+        catch(InterruptedException e) {
         }
       }
     }

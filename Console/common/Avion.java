@@ -40,7 +40,8 @@ public class Avion {
     Avion a;
     java.nio.ByteBuffer buffer = java.nio.ByteBuffer.wrap(array);
 
-    a = new Avion(new String(array,0,5),buffer.getInt(8),buffer.getInt(12),buffer.getInt(16),buffer.getInt(20),buffer.getInt(24));
+    System.out.println(array);
+    a = new Avion(new String(array,4,8),buffer.getInt(12),buffer.getInt(16),buffer.getInt(20),buffer.getInt(24),buffer.getInt(28));
     return a;
   }
 

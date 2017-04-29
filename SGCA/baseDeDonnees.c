@@ -64,6 +64,7 @@ int lireAvions(struct Avion** tabAvionRes, int* nbAvion) { //PENSER AU MALLOC
     sortieSC();
     return -1;
   }
+  memcpy(*tabAvionRes,bdd.tabAvion,bdd.nbAvion*sizeof(struct Avion));
   sortieSC();
   return 0;
 }
