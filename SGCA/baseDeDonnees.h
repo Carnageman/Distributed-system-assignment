@@ -12,10 +12,10 @@ struct baseDeDonnees bdd;
 
 int s;
 
-int initialiserBase();
-int ecrireAvion(struct Avion avion, int rang);
+void initialiserBase();
+void ecrireAvion(struct Avion avion, int rang);
 int lireAvions(struct Avion** tabAvionRes, int* nbAvion);
-int supprimerAvion(int rang);
+void supprimerAvion(int rang);
 int getNouveauRang();
 int getNbAvion();
 #endif

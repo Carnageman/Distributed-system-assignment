@@ -13,14 +13,38 @@
 #include "../Libs/UDP_socket.h"
 #include "baseDeDonnees.h"
 
-#define TAILLEBUF 50 
+#define TAILLEBUF 50
+#define MAGICNBR 56841
 
-void convertAvionToBigEndian(struct Avion* ptrA) {
-  ptrA->coord.x = htonl(ptrA->coord.x);
-  ptrA->coord.y = htonl(ptrA->coord.y);
-  ptrA->coord.altitude = htonl(ptrA->coord.altitude);
-  ptrA->dep.cap = htonl(ptrA->dep.cap);
-  ptrA->dep.vitesse = htonl(ptrA->dep.vitesse);
+struct Avion convertAvionToBigEndian(struct Avion a) {
+  a.coord.x = htonl(a.coord.x);
+  a.coord.y = htonl(a.coord.y);
+  a.coord.altitude = htonl(a.coord.altitude);
+  a.dep.cap = htonl(a.dep.cap);
+  a.dep.vitesse = htonl(a.dep.vitesse);
+  return a;
+}
+
+void paquetAvion(void* buffer,struct Avion a) {
+  struct Avion* debBufferAvion;
+  ((int*)buffer)[0] = htonl(MAGICNBR);
+  a = convertAvionToBigEndian(a);
+  debBufferAvion = (struct Avion*)(&((int*)buffer)[1]); /*debBufferAvion pointe juste après le int magicNbr*/
+  *debBufferAvion = a;
+}
+
+void paquetNbAvion(void* buffer,int nb) {
+  ((int*)buffer)[0] = htonl(MAGICNBR);
+  ((int*)buffer)[1] = htonl(nb);
+}
+
+int verificationPaquet(void* buffer, int nbBytes) {
+  int premierEntierBuffer;
+  if (nbBytes >= 4) {
+    premierEntierBuffer = ((int*)buffer)[0];
+    return ((nbBytes == 4 || nbBytes == 8) && premierEntierBuffer == htonl(MAGICNBR));
+  }
+  else return 1;
 }
 
 void* multicastManager() {
@@ -63,89 +87,84 @@ void* multicastManager() {
 
 void* initialisationConnexionAvionManager() {
 
+  return 0;
 }
 
 void* consoleAffichageManager() {
   socklen_t lg;
-  socklen_t lgEnvoi;
   /*static*/ struct sockaddr_in addr_client;
-  struct sockaddr_in addr_client2;
   int sock;
   size_t taillebuffeur = TAILLEBUF;
   char buffer[TAILLEBUF];
-  char bufferEnvoi[TAILLEBUF];
-  int nb_octets, nb_octets2;
+  int nb_octets;
   int nombreAvions;
+  int nbreAvionPaquet;
   struct Avion* tabAvion;
   int i;
-  struct Avion* debBufferAvion;
-  int sockEnvoi;
   
   sock = creerSocketUDP(5842);
-  sockEnvoi = creerSocketUDP(0);
   if(sock == -1) {
-    fprintf(stderr,"Erreur, ouverture de socket UDP impossible !\n");
+    perror("Erreur lors de la création de la socket UDP");
     exit(-1);
   }
   lg = sizeof(struct sockaddr_in);
   while(1) {
-    lg = sizeof(struct sockaddr_in);
-    printf("J'attend un paquet... %d\n",sock);
     nb_octets = recvfrom(sock,buffer,taillebuffeur,0,(struct sockaddr *)&addr_client,&lg);
-    addr_client2 = addr_client;
-    memcpy(bufferEnvoi,buffer,TAILLEBUF);
-    printf("J'ai recu un paquet de %d octets capitaine, je le traite... \n",nb_octets);
-    switch(nb_octets) {
-    case -1:
-    //Si il y a eu une erreur
-      perror("Erreur lors de la réception du packet");
-      exit(-1);
-    case 4:
-    //Si un entier seul est recu (Requete pour obtenir le nbre d'avion)
-      //((int*)bufferEnvoi)[1] = htonl(getNbAvion()); //Peut etre ajouter un to big endien
-      printf("Demande de nbAvion recu !\n");
-      lgEnvoi = sizeof(struct sockaddr_in);
-      nb_octets2 = sendto(sockEnvoi,buffer,8,0,(struct sockaddr*)&addr_client2,lgEnvoi);
-      printf("nb_octets2 : %d\n",nb_octets2);
-      printf("sizeof : %d\n",sizeof(int)*2);
-      break;
-    
-    case 8:
-      lireAvions(&tabAvion,&nombreAvions);
-      //Si deux entiers sont recu (Requete pour obtenir les avions en donnant le nbre d'avion)
-      if (((int*)buffer)[1] == htonl(nombreAvions)) {
-      //Envois des avions à la console
-        printf("Demande d'avions recu !\n");
-        debBufferAvion = (struct Avion*)(&(((int*)buffer)[1]));
-        for(i = 0; i < nombreAvions; i++) {
-          printf("%d\n",(sizeof(int) + sizeof(struct Avion)));
-          printf("Nom de l'avion : %s\n",tabAvion[i].numero_vol);
-          (*debBufferAvion) = tabAvion[i];
-          convertAvionToBigEndian(debBufferAvion);
-          nb_octets = sendto(sock,buffer,32,0,(struct sockaddr*)&addr_client,lg);
-          printf("nb_octets = %d\n",nb_octets);
+    if(verificationPaquet(buffer,nb_octets)) {
+    //Si le premier entier est correct
+     switch(nb_octets) {
+      case -1:
+      //Si il y a eu une erreur
+        perror("Erreur lors de la réception du paquet UDP");
+        exit(-1);
+      case 4:
+      //Si un entier seul est recu (Requete pour obtenir le nbre d'avion)
+        paquetNbAvion(buffer,getNbAvion());
+        nb_octets = sendto(sock,buffer,8,0,(struct sockaddr*)&addr_client,lg);
+        if (nb_octets == -1) {
+          perror("Erreur lors de l'envoi d'un paquet UDP");
         }
+        break;
+    
+      case 8:
+        lireAvions(&tabAvion,&nombreAvions);
+        nbreAvionPaquet = ((int*)buffer)[1];
+        //Si deux entiers sont recu (Requete pour obtenir les avions en donnant le nbre d'avion)
+        if (nbreAvionPaquet == htonl(nombreAvions)) {
+        //Envois des avions à la console
+          for(i = 0; i < nombreAvions; i++) {
+            paquetAvion(buffer,tabAvion[i]);
+            nb_octets = sendto(sock,buffer,(sizeof(int)+sizeof(struct Avion)),0,(struct sockaddr*)&addr_client,lg);
+            if (nb_octets == -1) {
+              perror("Erreur lors de l'envoi d'un paquet UDP");
+            }
+          }
+        }
+        else {
+        //Si l'entier recu dans la requete n'est pas le nombre d'avion
+          paquetNbAvion(buffer,getNbAvion());
+          nb_octets = sendto(sock,buffer,(sizeof(int)*2),0,(struct sockaddr*)&addr_client,lg);
+          if (nb_octets == -1) {
+            perror("Erreur lors de l'envoi d'un paquet UDP");
+          }
+        }
+        break;
       }
-      else {
-      //Si l'entier recu dans la requete n'est pas le nombre d'avion
-        ((int*)buffer)[1] = htonl(nombreAvions); 
-        nb_octets = sendto(sock,buffer,(sizeof(int)*2),0,(struct sockaddr*)&addr_client,lg);
-      }
-      break;
     }
   }
-  printf("Je me barre.\n");
 }
 
 void* avionInfoManager() {
 
+  return 0;
 }
 
 void* avionOrdreManager() {
 
+  return 0;
 }
 
-int jeuDeTestBase() {
+void jeuDeTestBase() {
   int rang;
   struct Avion a;
 
@@ -183,7 +202,6 @@ int main() {
   pthread_t thread2;
   initialiserBase();
   jeuDeTestBase();
-  printf("Hello world.\n");
   pthread_create(&thread1,NULL,multicastManager,NULL);
   pthread_create(&thread2,NULL,consoleAffichageManager,NULL);
   while (1);

@@ -4,24 +4,22 @@
 #include <string.h>
 
 void entreeSC() {
-  printf("Attente...\n");
   while (s <= 0); //Attente active
   s--;
-  printf("SC !\n");
 }
 
 void sortieSC() {
   s++; //Déblocage de l'attente des autres processus
 }
 
-int initialiserBase() {
+void initialiserBase() {
   bdd.nbAvion = 0; 
   bdd.nbTab = 0;
   bdd.tabAvion = NULL;
   s = 1;
 }
 
-int supprimerAvion(int rang) {
+void supprimerAvion(int rang) {
   entreeSC();
   bdd.tabAvion[rang] = bdd.tabAvion[bdd.nbAvion - 1];
   bdd.nbAvion--;
@@ -49,7 +47,7 @@ int getNouveauRang() {
   return bdd.nbAvion-1;
 }
 
-int ecrireAvion(struct Avion avion, int rang) {
+void ecrireAvion(struct Avion avion, int rang) {
   entreeSC();
   bdd.tabAvion[rang] = avion;
   sortieSC();
