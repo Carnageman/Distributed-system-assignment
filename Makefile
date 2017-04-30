@@ -1,6 +1,7 @@
 CC = gcc -Wall -g
+CJ = javac -cp Console -d classFiles/
 
-all : avion example.jar sgca
+all : avion example.jar sgca affichage.jar 
 
 avion : Avion/avion.c Libs/avion.h Libs/TCP_socket.o Libs/TCP_socket.h
 	$(CC) -o avion Avion/avion.c -lm Libs/TCP_socket.o
@@ -14,18 +15,25 @@ SGCA/baseDeDonnees.o : SGCA/baseDeDonnees.h SGCA/baseDeDonnees.c
 sgca : Libs/avion.h SGCA/sgca.c Libs/UDP_socket.o SGCA/baseDeDonnees.o
 	$(CC) -o sgca SGCA/sgca.c Libs/UDP_socket.o SGCA/baseDeDonnees.o -lpthread
 
-Console/package2/ExampleIO.class : Console/package2/ExampleIO.java
-	javac -cp Console Console/package2/ExampleIO.java
-Console/package1/ExampleProgram.class : Console/package1/ExampleProgram.java
-	javac -cp Console Console/package1/ExampleProgram.java
-example.jar : Console/package1/ExampleProgram.class Console/package2/ExampleIO.class
-	jar cfe example.jar package1.ExampleProgram -C Console package1/ExampleProgram.class -C Console package2/ExampleIO.class
+classFiles/ :
+	mkdir classFiles
+classFiles/common/Avion.class : Console/common/Avion.java classFiles/
+	$(CJ) Console/common/Avion.java
+classFiles/affichage/PacketsAffichage.class : classFiles/common/Avion.class Console/affichage/PacketsAffichage.java
+	$(CJ) Console/affichage/PacketsAffichage.java
+classFiles/affichage/CommSGCA.class : classFiles/affichage/PacketsAffichage.class classFiles/common/Avion.class Console/affichage/CommSGCA.java classFiles/
+	$(CJ) Console/affichage/CommSGCA.java
+classFiles/affichage/UpdateVectorAvionThread.class : classFiles/affichage/CommSGCA.class classFiles/common/Avion.class classFiles/affichage/PacketsAffichage.class
+	$(CJ) Console/affichage/UpdateVectorAvionThread.java
+classFiles/affichage/ConsoleAffichageMain.class : classFiles/affichage/UpdateVectorAvionThread.class
+	$(CJ) Console/affichage/ConsoleAffichageMain.java
+affichage.jar : classFiles/affichage/ConsoleAffichageMain.class
+	jar cfe affichage.jar affichage.ConsoleAffichageMain -C classFiles .
 
 clean:
 	rm Libs/TCP_socket.o
 	rm Libs/UDP_socket.o	
 	rm SGCA/baseDeDonnees.o
-	rm Console/package1/ExampleProgram.class
-	rm Console/package2/ExampleIO.class
 	rm sgca
 	rm avion
+	rm classFiles/ -R

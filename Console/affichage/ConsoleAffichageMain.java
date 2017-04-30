@@ -7,7 +7,12 @@ public class ConsoleAffichageMain {
       System.out.println("Usage : ConsoleAffichageMain <hostname>");
     }
     else {
-      (new UpdateVectorAvionThread(args[0])).run();
+      try {
+        (new UpdateVectorAvionThread(java.net.InetAddress.getByName(args[0]))).run();
+      }
+      catch (java.net.UnknownHostException excepHost){
+        System.out.println("Unknown host !");
+      }
     }
   }
 }
