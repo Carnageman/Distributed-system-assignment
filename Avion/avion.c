@@ -50,11 +50,12 @@ int ouvrir_communication()
 	  addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	  addr.sin_port = htons(PORT_MULTICAST);
 	  addrlen = sizeof(addr);
-
+    printf("Bonjour\n");
 	  if (bind(sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
 	    perror("bind");
 	    exit(1);
 	  }
+    printf("Aurevoir\n");
 	  mreq.imr_multiaddr.s_addr = inet_addr(GROUP_MULTICAST);
 	  mreq.imr_interface.s_addr = htonl(INADDR_ANY);
 	  if (setsockopt(sock, IPPROTO_IP, IP_ADD_MEMBERSHIP,&mreq, sizeof(mreq)) < 0) {
@@ -70,21 +71,22 @@ int ouvrir_communication()
 	  printf("Recu !\n");
 	  ip = inet_ntoa(addr_serveur.sin_addr);
 	  printf("Adresse : %s\n",ip);
-
-
 	  sock = creerSocketTCP(0);
 	  if (sock == -1) return 0; //Message erreur
-	  host_serveur = gethostbyname("localhost"); //A modifier pour prendre en compte les args
+	  host_serveur = gethostbyname(ip); //A modifier pour prendre en compte les args
 	  if (host_serveur == NULL) return 0; //Message erreur
-	  bzero((char *) &addr_serveur,sizeof(addr_serveur));
+	  //bzero((char *) &addr_serveur,sizeof(addr_serveur));
 		addr_serveur.sin_family = AF_INET;
 		addr_serveur.sin_port = htons(1285); //A modifier pour prendre en compte les args
-		memcpy(&addr_serveur.sin_addr.s_addr,host_serveur->h_addr, host_serveur->h_length);
+		//memcpy(&addr_serveur.sin_addr.s_addr,host_serveur->h_addr, host_serveur->h_length);
 		if (connect(sock,(struct sockaddr *)&addr_serveur,sizeof(struct sockaddr_in)) == -1) {
+      perror("TCP : ");
+      printf("Connexion TCP échouée !\n");
 			return 0; //Message erreur
 		}
-	  return 1;
-	}
+    printf("Fin init\n");
+	  return sock;
+}
 
 	void fermer_communication()
 	{
@@ -93,7 +95,7 @@ int ouvrir_communication()
 	  close(sock);
 	}
 
-	void envoyer_caracteristiques()
+	void envoyer_caracteristiques(int sock)
 	{
 	  // fonction � impl�menter qui envoie l'ensemble des caract�ristiques
 	  // courantes de l'avion au gestionnaire de vols
@@ -102,12 +104,16 @@ int ouvrir_communication()
 	    exit(4);
 	  }
 
+    sleep(PAUSE);
+
 	  if (write(sock,&coord,sizeof(coord)) == -1) {
 	    perror("envoyer_caracteristiques coord");
 	    exit(4);
 	  }
 
-	  if (write(sock,&(dep.cap),sizeof(int)) == -1) {
+    sleep(PAUSE);
+
+	  if (write(sock,&dep,sizeof(dep)) == -1) {
 	    perror("envoyer_caracteristiques cap");
 	    exit(4);
 	  }
@@ -138,9 +144,9 @@ int ouvrir_communication()
 	  // form�e de 2 lettres puis 3 chiffres
 	  numero_vol[0] = (random() % 26) + 'A';
 	  numero_vol[1] = (random() % 26) + 'A';
-	  //sprintf (&(numero_vol)[2], "%3ld", (random() % 999) + 1);
+	  sprintf (&(numero_vol)[2], "%3ld", (random() % 999) + 1);
 	  printf("sprintf!\n");
-	  //numero_vol[5] = 0;
+	  numero_vol[5] = 0;
 	  printf("Fin initialiser avion! Numero_vol : %s\n",numero_vol);
 	}
 
@@ -221,29 +227,30 @@ void calcul_deplacement()
 }
 
 // fonction principale : g�re l'ex�cution de l'avion au fil du temps
-void se_deplacer()
+void se_deplacer(int sock)
 {
   while(1)
     {
       sleep(PAUSE);
       calcul_deplacement();
-      envoyer_caracteristiques();
+      envoyer_caracteristiques(sock);
     }
 }
 
 int main()
 {
+  int err;
   // on initialise l'avion
   initialiser_avion();
   printf("Initialisation accomplie !\n");
   afficher_donnees();
   // on quitte si on arrive � pas contacter le gestionnaire de vols
-  if (!ouvrir_communication())
-    {
+  err = ouvrir_communication();
+  if (!err) {
       printf("Impossible de contacter le gestionnaire de vols\n");
       exit(1);
     }
 
   // on se d�place une fois toutes les initialisations faites
-  se_deplacer();
+  se_deplacer(err);
 }
