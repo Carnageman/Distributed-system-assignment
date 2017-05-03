@@ -1,7 +1,7 @@
 CC = gcc -Wall -g
 CJ = javac -cp Console -d classFiles/
 
-all : avion example.jar sgca affichage.jar 
+all : avion sgca affichage.jar 
 
 avion : Avion/avion.c Libs/avion.h Libs/TCP_socket.o Libs/TCP_socket.h
 	$(CC) -o avion Avion/avion.c -lm Libs/TCP_socket.o
@@ -12,8 +12,8 @@ Libs/UDP_socket.o : Libs/UDP_socket.c Libs/UDP_socket.h
 
 SGCA/baseDeDonnees.o : SGCA/baseDeDonnees.h SGCA/baseDeDonnees.c
 	$(CC) -o SGCA/baseDeDonnees.o -c SGCA/baseDeDonnees.c
-sgca : Libs/avion.h SGCA/sgca.c Libs/UDP_socket.o SGCA/baseDeDonnees.o
-	$(CC) -o sgca SGCA/sgca.c Libs/UDP_socket.o SGCA/baseDeDonnees.o -lpthread
+sgca : Libs/avion.h SGCA/sgca.c Libs/UDP_socket.o SGCA/baseDeDonnees.o Libs/TCP_socket.o
+	$(CC) -o sgca SGCA/sgca.c Libs/UDP_socket.o SGCA/baseDeDonnees.o Libs/TCP_socket.o -lpthread
 
 classFiles/ :
 	mkdir classFiles
