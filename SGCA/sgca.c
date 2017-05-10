@@ -211,12 +211,6 @@ void* consoleAffichageManager() {
               perror("Erreur lors de l'envoi d'un paquet UDP");
             }
           }
-<<<<<<< HEAD
-
-          
-=======
-         free(tabAvion);
->>>>>>> e1067fe13e2bc1fe7f040605eebfb99171311c97
         }
         else {
         //Si l'entier recu dans la requete n'est pas le nombre d'avion
