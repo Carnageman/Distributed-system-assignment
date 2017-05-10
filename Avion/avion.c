@@ -50,12 +50,10 @@ int ouvrir_communication()
 	  addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	  addr.sin_port = htons(PORT_MULTICAST);
 	  addrlen = sizeof(addr);
-    printf("Bonjour\n");
 	  if (bind(sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
 	    perror("bind");
 	    exit(1);
 	  }
-    printf("Aurevoir\n");
 	  mreq.imr_multiaddr.s_addr = inet_addr(GROUP_MULTICAST);
 	  mreq.imr_interface.s_addr = htonl(INADDR_ANY);
 	  if (setsockopt(sock, IPPROTO_IP, IP_ADD_MEMBERSHIP,&mreq, sizeof(mreq)) < 0) {
@@ -68,9 +66,8 @@ int ouvrir_communication()
 	    perror("recvfrom");
 		  exit(1);
 		}
-	  printf("Recu !\n");
+    close(sock);
 	  ip = inet_ntoa(addr_serveur.sin_addr);
-	  printf("Adresse : %s\n",ip);
 	  sock = creerSocketTCP(0);
 	  if (sock == -1) return 0; //Message erreur
 	  host_serveur = gethostbyname(ip); //A modifier pour prendre en compte les args
@@ -84,7 +81,6 @@ int ouvrir_communication()
       printf("Connexion TCP échouée !\n");
 			return 0; //Message erreur
 		}
-    printf("Fin init\n");
 	  return sock;
 }
 
@@ -129,7 +125,6 @@ int ouvrir_communication()
 	  // initialisation al�atoire du compteur al�atoire
 	  time_t seed;
 	  time(&seed);
-	  printf("time_t\n");
 	  srandom(seed);
 
 	  // intialisation des param�tres de l'avion
@@ -145,9 +140,7 @@ int ouvrir_communication()
 	  numero_vol[0] = (random() % 26) + 'A';
 	  numero_vol[1] = (random() % 26) + 'A';
 	  sprintf (&(numero_vol)[2], "%3ld", (random() % 999) + 1);
-	  printf("sprintf!\n");
 	  numero_vol[5] = 0;
-	  printf("Fin initialiser avion! Numero_vol : %s\n",numero_vol);
 	}
 
 // modifie la valeur de l'avion avec la valeur pass�e en param�tre
@@ -242,7 +235,6 @@ int main()
   int err;
   // on initialise l'avion
   initialiser_avion();
-  printf("Initialisation accomplie !\n");
   afficher_donnees();
   // on quitte si on arrive � pas contacter le gestionnaire de vols
   err = ouvrir_communication();

@@ -94,7 +94,6 @@ void* avionInfoManager(int* sock) {
   struct Avion a;
   while (1) {
     nb_octetsRead = read(socket_service,message,TAILLEBUF);		
-    printf("nb_octetsRead = %d\n",nb_octetsRead);
     if (nb_octetsRead <= 0) break;
 	  a.numero_vol[0] = message[0];
 	  a.numero_vol[1] = message[1];
@@ -107,11 +106,7 @@ void* avionInfoManager(int* sock) {
 	  memcpy(&a.coord,message,sizeof(message));
 	  nb_octetsRead = read(socket_service,message,TAILLEBUF);
     if (nb_octetsRead <= 0) break;
-
 	  memcpy(&a.dep,message,sizeof(message));
-
-	  printf("Avion %s -> localisation : (%d,%d), altitude : %d, vitesse : %d, cap : %d\n",a.numero_vol, a.coord.x, a.coord.y, a.coord.altitude, a.dep.vitesse, a.dep.cap);
-
 	  ecrireAvion(a,rang);
 	}
   supprimerAvion(rang);
