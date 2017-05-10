@@ -11,6 +11,7 @@
 
 #include "../Libs/avion.h"
 #include "../Libs/UDP_socket.h"
+#include "../Libs/TCP_socket.h"
 #include "baseDeDonnees.h"
 
 #define TAILLEBUF 50
@@ -85,8 +86,78 @@ void* multicastManager() {
   }
 }
 
-void* initialisationConnexionAvionManager() {
+void* avionInfoManager(int* sock) {
+  int socket_service = *sock;
+	int rang = getNouveauRang();
+  int nb_octetsRead;
+	char message[TAILLEBUF];
+  struct Avion a;
+  while (1) {
+    nb_octetsRead = read(socket_service,message,TAILLEBUF);		
+    printf("nb_octetsRead = %d\n",nb_octetsRead);
+    if (nb_octetsRead <= 0) break;
+	  a.numero_vol[0] = message[0];
+	  a.numero_vol[1] = message[1];
+    a.numero_vol[2] = message[2];
+    a.numero_vol[3] = message[3];
+    a.numero_vol[4] = message[4];
+    a.numero_vol[5] = message[5];
+	  nb_octetsRead = read(socket_service,message,TAILLEBUF);
+    if (nb_octetsRead <= 0) break;
+	  memcpy(&a.coord,message,sizeof(message));
+	  nb_octetsRead = read(socket_service,message,TAILLEBUF);
+    if (nb_octetsRead <= 0) break;
 
+	  memcpy(&a.dep,message,sizeof(message));
+
+	  printf("Avion %s -> localisation : (%d,%d), altitude : %d, vitesse : %d, cap : %d\n",a.numero_vol, a.coord.x, a.coord.y, a.coord.altitude, a.dep.vitesse, a.dep.cap);
+
+	  ecrireAvion(a,rang);
+	}
+  supprimerAvion(rang);
+	// on ferme les sockets
+	close(socket_service);
+  return 0;
+}
+void* initialisationConnexionAvionManager() {
+	// adresse socket coté client
+	static struct sockaddr_in addr_client;
+	// adresse socket locale
+	static struct sockaddr_in addr_serveur;
+	// longueur adresse
+	socklen_t lg_addr;
+	// socket d'écoute et de service
+	int socket_ecoute, socket_service;
+	// buffer qui contiendra le message reçu
+	char message[TAILLEBUF];
+	// chaîne reçue du client
+	char *chaine_recue;
+	// nombre d'octets reçus ou envoyés
+	int nb_octetsRead = TAILLEBUF;
+  pthread_t* thread;
+
+	socket_ecoute = creerSocketTCP(1285);
+	if(socket_ecoute == -1)
+	{
+		exit(1);
+	}
+	// configuration socket écoute : 5 connexions max en attente
+	if (listen(socket_ecoute, 5) == -1) {
+		perror("erreur listen");
+		exit(1);
+	}
+	// on attend la connexion du client
+	lg_addr = sizeof(struct sockaddr_in);
+  while (1) {
+	  socket_service = accept(socket_ecoute,(struct sockaddr *)&addr_client, &lg_addr);
+	  if (socket_service == -1) {
+		  perror("erreur accept");
+		  exit(1);
+	  }
+    thread = malloc(sizeof(pthread_t));
+    pthread_create(thread,NULL,avionInfoManager,&socket_service);
+  }
+	close(socket_ecoute);
   return 0;
 }
 
@@ -140,8 +211,12 @@ void* consoleAffichageManager() {
               perror("Erreur lors de l'envoi d'un paquet UDP");
             }
           }
+<<<<<<< HEAD
 
           
+=======
+         free(tabAvion);
+>>>>>>> e1067fe13e2bc1fe7f040605eebfb99171311c97
         }
         else {
         //Si l'entier recu dans la requete n'est pas le nombre d'avion
@@ -160,10 +235,7 @@ void* consoleAffichageManager() {
   }
 }
 
-void* avionInfoManager() {
 
-  return 0;
-}
 
 void* avionOrdreManager() {
 
@@ -206,10 +278,12 @@ void jeuDeTestBase() {
 int main() {
   pthread_t thread1;
   pthread_t thread2;
+  pthread_t thread3;
   initialiserBase();
   jeuDeTestBase();
   pthread_create(&thread1,NULL,multicastManager,NULL);
   pthread_create(&thread2,NULL,consoleAffichageManager,NULL);
+  pthread_create(&thread3,NULL,initialisationConnexionAvionManager,NULL);
   while (1);
   //pthread_join(thread1,NULL);
 }

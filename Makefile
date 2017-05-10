@@ -12,8 +12,8 @@ Libs/UDP_socket.o : Libs/UDP_socket.c Libs/UDP_socket.h
 
 SGCA/baseDeDonnees.o : SGCA/baseDeDonnees.h SGCA/baseDeDonnees.c
 	$(CC) -o SGCA/baseDeDonnees.o -c SGCA/baseDeDonnees.c
-sgca : Libs/avion.h SGCA/sgca.c Libs/UDP_socket.o SGCA/baseDeDonnees.o
-	$(CC) -o sgca SGCA/sgca.c Libs/UDP_socket.o SGCA/baseDeDonnees.o -lpthread
+sgca : Libs/avion.h SGCA/sgca.c Libs/UDP_socket.o SGCA/baseDeDonnees.o Libs/TCP_socket.o
+	$(CC) -o sgca SGCA/sgca.c Libs/UDP_socket.o SGCA/baseDeDonnees.o Libs/TCP_socket.o -lpthread
 
 classFiles/ :
 	mkdir classFiles
