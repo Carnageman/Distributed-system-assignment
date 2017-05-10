@@ -56,6 +56,7 @@ void ecrireAvion(struct Avion avion, int rang) {
 int lireAvions(struct Avion** tabAvionRes, int* nbAvion) { //PENSER AU MALLOC
   entreeSC();
   *nbAvion = bdd.nbAvion;
+  if (*nbAvion != 0) {
   *tabAvionRes = malloc(sizeof(struct Avion)*bdd.nbTab);
   if (tabAvionRes == NULL) {
     fprintf(stderr,"lireAvions : Erreur : allocation dynamique impossible.\n");
@@ -63,6 +64,8 @@ int lireAvions(struct Avion** tabAvionRes, int* nbAvion) { //PENSER AU MALLOC
     return -1;
   }
   memcpy(*tabAvionRes,bdd.tabAvion,bdd.nbAvion*sizeof(struct Avion));
+  }
+  else *tabAvionRes = NULL;
   sortieSC();
   return 0;
 }
@@ -70,3 +73,40 @@ int lireAvions(struct Avion** tabAvionRes, int* nbAvion) { //PENSER AU MALLOC
 int getNbAvion() {
   return bdd.nbAvion;
 }
+
+int checkAvion(char num_vol[]) {
+  int i = 0;
+  int trouve = -1;
+  if (bdd.nbAvion != 0) {
+    while ((i < bdd.nbAvion) && (trouve == -1)) {
+      if (strcmp(num_vol,(bdd.tabAvion[i]).numero_vol) == 0) {
+        trouve = i;
+      }
+      i++;
+    }
+  }
+  return (trouve != -1);
+}
+
+/*int main() {
+  struct Avion a;
+  int nb;
+  char un_numero[5] = "mich";
+  a.numero_vol[0] = 'C';
+  a.numero_vol[1] = 'o';
+  a.numero_vol[2] = 'u';
+  a.numero_vol[3] = 'c';
+  a.numero_vol[4] = 'o';
+  a.numero_vol[5] = '\0';
+  a.coord.x = 5;
+  a.coord.y = 10;
+  a.coord.altitude = 4500;
+  a.dep.cap = 480;
+  a.dep.vitesse = 500;
+  initialiserBase();
+  printf("%d\n",checkAvion(a.numero_vol));
+  nb = getNouveauRang();
+  ecrireAvion(a,nb);
+  printf("%d\n",checkAvion(a.numero_vol));
+  printf("%d\n",checkAvion(un_numero));
+}*/

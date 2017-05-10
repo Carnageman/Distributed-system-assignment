@@ -18,4 +18,5 @@ int lireAvions(struct Avion** tabAvionRes, int* nbAvion);
 void supprimerAvion(int rang);
 int getNouveauRang();
 int getNbAvion();
+int checkAvion(char num_vol[]); //A FAIRE 
 #endif

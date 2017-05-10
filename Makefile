@@ -1,7 +1,7 @@
 CC = gcc -Wall -g
 CJ = javac -cp Console -d classFiles/
 
-all : avion example.jar sgca affichage.jar 
+all : avion sgca affichage.jar 
 
 avion : Avion/avion.c Libs/avion.h Libs/TCP_socket.o Libs/TCP_socket.h
 	$(CC) -o avion Avion/avion.c -lm Libs/TCP_socket.o
@@ -36,4 +36,5 @@ clean:
 	rm SGCA/baseDeDonnees.o
 	rm sgca
 	rm avion
+	rm affichage.jar
 	rm classFiles/ -R

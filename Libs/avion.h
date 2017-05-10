@@ -29,4 +29,9 @@ struct Avion {
   struct deplacement dep;
 };
 
+struct Ordre {
+	char numero_vol[6];
+	struct deplacement dep;
+	int altitude;
+};
 #endif

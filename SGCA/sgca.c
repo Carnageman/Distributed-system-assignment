@@ -109,6 +109,7 @@ void* consoleAffichageManager() {
   }
   lg = sizeof(struct sockaddr_in);
   while(1) {
+    tabAvion = NULL;
     nb_octets = recvfrom(sock,buffer,taillebuffeur,0,(struct sockaddr *)&addr_client,&lg);
     if(verificationPaquet(buffer,nb_octets)) {
     //Si le premier entier est correct
@@ -139,6 +140,8 @@ void* consoleAffichageManager() {
               perror("Erreur lors de l'envoi d'un paquet UDP");
             }
           }
+
+          
         }
         else {
         //Si l'entier recu dans la requete n'est pas le nombre d'avion
@@ -147,6 +150,9 @@ void* consoleAffichageManager() {
           if (nb_octets == -1) {
             perror("Erreur lors de l'envoi d'un paquet UDP");
           }
+        }
+        if (tabAvion != NULL) {
+          free(tabAvion);
         }
         break;
       }
