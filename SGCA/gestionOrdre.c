@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include "gestionOrdre.h"
 
+void initialiserBaseOrdre() {
+  bddOrdre.nbOrdre = 0;
+}
 
 int retirerOrdre(int rang) {
   bddOrdre.tabOrdre[rang] = bddOrdre.tabOrdre[bddOrdre.nbOrdre - 1];
@@ -43,7 +46,7 @@ void retirerOrdres(char num_vol[]) {
   }
 }
 /*PROGRAMME DE TEST*/
-int main() {
+/*int main() {
   struct Ordre ordre;
   ordre.numero_vol[0] = 'C';
   ordre.numero_vol[1] = 'o';
@@ -60,4 +63,4 @@ int main() {
   printf("%d\n",getNewOrdre(&ordre,ordre.numero_vol));
   printf("%d\n",ordre.dep.cap);
   printf("%d\n",getNewOrdre(&ordre,ordre.numero_vol));
-}
+}*/

@@ -10,6 +10,7 @@ struct BaseOrdre {
 
 struct BaseOrdre bddOrdre;
 
+void initialiserBaseOrdre();
 int getNewOrdre(struct Ordre* ordre,char num_vol[]); /*Prend un nouvel ordre dans la base et le retire de la base*/
 int putOrdre(struct Ordre ordre);
 void retirerOrdres(char num_vol[]);

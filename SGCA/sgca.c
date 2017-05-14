@@ -13,6 +13,7 @@
 #include "../Libs/UDP_socket.h"
 #include "../Libs/TCP_socket.h"
 #include "baseDeDonnees.h"
+#include "gestionOrdre.h"
 
 #define TAILLEBUF 50
 #define MAGICNBR 56841
@@ -43,9 +44,18 @@ int verificationPaquet(void* buffer, int nbBytes) {
   int premierEntierBuffer;
   if (nbBytes >= 4) {
     premierEntierBuffer = ((int*)buffer)[0];
-    return ((nbBytes == 4 || nbBytes == 8) && premierEntierBuffer == htonl(MAGICNBR));
+    return ((nbBytes == 4 || nbBytes == 8 || nbBytes == 24) && premierEntierBuffer == htonl(MAGICNBR));
   }
   else return 1;
+}
+
+void convertPaquetToOrdre(void* buffer,struct Ordre* ord) {
+  struct Ordre* ptrDebOrd = (struct Ordre*)(&(((int*)buffer)[1]));
+  *ord = *ptrDebOrd;
+  ord->numero_vol[5] = '\0';
+  ord->dep.cap = ntohl(ord->dep.cap);
+  ord->dep.vitesse = ntohl(ord->dep.vitesse);
+  ord->altitude = ntohl(ord->altitude);
 }
 
 void* multicastManager() {
@@ -167,6 +177,8 @@ void* consoleAffichageManager() {
   int nbreAvionPaquet;
   struct Avion* tabAvion;
   int i;
+  int retour;
+  struct Ordre ord;
   
   sock = creerSocketUDP(5842);
   if(sock == -1) {
@@ -219,6 +231,33 @@ void* consoleAffichageManager() {
           free(tabAvion);
         }
         break;
+      case 24:
+        convertPaquetToOrdre(buffer,&ord);
+        printf("%s : (%d,%d),%d\n",ord.numero_vol,ord.dep.cap,ord.dep.vitesse,ord.altitude);
+        if (checkAvion(ord.numero_vol)) {
+          if(putOrdre(ord) == 0) {
+            paquetNbAvion(buffer,0);
+            nb_octets = sendto(sock,buffer,(sizeof(int)*2),0,(struct sockaddr*)&addr_client,lg);
+            if (nb_octets == -1) {
+              perror("Erreur lors de l'envoi d'un paquet UDP");
+            }
+          }
+          else {
+            paquetNbAvion(buffer,2);
+            nb_octets = sendto(sock,buffer,(sizeof(int)*2),0,(struct sockaddr*)&addr_client,lg);
+            if (nb_octets == -1) {
+              perror("Erreur lors de l'envoi d'un paquet UDP");
+            }
+          }
+        }
+        else {
+          paquetNbAvion(buffer,1);
+          nb_octets = sendto(sock,buffer,(sizeof(int)*2),0,(struct sockaddr*)&addr_client,lg);
+          if (nb_octets == -1) {
+            perror("Erreur lors de l'envoi d'un paquet UDP");
+          }
+        }
+        break;
       }
     }
   }
@@ -269,6 +308,7 @@ int main() {
   pthread_t thread2;
   pthread_t thread3;
   initialiserBase();
+  initialiserBaseOrdre();
   jeuDeTestBase();
   pthread_create(&thread1,NULL,multicastManager,NULL);
   pthread_create(&thread2,NULL,consoleAffichageManager,NULL);
