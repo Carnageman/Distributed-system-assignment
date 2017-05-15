@@ -17,7 +17,7 @@ public class CommunicationSGCA {
     } 
   }
 
-  public void envoiOrdre(common.OrdreDeplacement dep) {
+  public void envoiOrdre(common.OrdreDeplacement dep) throws AvionNotFoundException, NoFreeSpaceOrderException, common.SGCATimeOutException {
     int nbTry = 0;
     int reponse;
     java.net.DatagramPacket packetReception = new java.net.DatagramPacket(new byte[50],50);
@@ -35,21 +35,18 @@ public class CommunicationSGCA {
               System.out.println("Bien reçu !");
               break;
             }
-            if (reponse == 1) {
-              //throw
-              break;
+            if (reponse == 1) { //Si l'avion n'existe pas dans la base
+              throw new AvionNotFoundException();
             }
-            if (reponse == 2) {
-              //throw
-              break;
+            if (reponse == 2) { //Si il n'y a plus de place dans la base des ordres
+              throw new NoFreeSpaceOrderException();
             }
           }
         }
         catch (java.net.SocketTimeoutException excpSock) {
           nbTry++;
           if (nbTry > 10) {
-            //throw
-            break;
+            throw new common.SGCATimeOutException();
           }
         }
       }
