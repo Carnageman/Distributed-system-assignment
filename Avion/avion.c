@@ -78,7 +78,7 @@ int ouvrir_communication()
 	  if (host_serveur == NULL) return 0; //Message erreur
 	  //bzero((char *) &addr_serveur,sizeof(addr_serveur));
 		addr_serveur.sin_family = AF_INET;
-		addr_serveur.sin_port = htons(1285); //A modifier pour prendre en compte les args
+		//addr_serveur.sin_port = htons(1285); ATTENTION J'AI CHANGE CA JE NE SAIS PAS SI CA VA TROP BIEN MARCHE OU NON//A modifier pour prendre en compte les args
 		//memcpy(&addr_serveur.sin_addr.s_addr,host_serveur->h_addr, host_serveur->h_length);
 		if (connect(sock,(struct sockaddr *)&addr_serveur,sizeof(struct sockaddr_in)) == -1) {
       perror("TCP : ");

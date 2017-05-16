@@ -22,6 +22,7 @@ public class UpdateVectorAvionThread extends Thread {
   public void run() {
     Vector<Avion> vectAvion;
     int i;
+    try {
     while (true) {
       vectAvion = comSGCA.getAvions();
       clearScreen();
@@ -34,5 +35,9 @@ public class UpdateVectorAvionThread extends Thread {
       catch (InterruptedException excp) {
       }
     }  
+    }
+    catch (common.SGCATimeOutException e) {
+      System.out.println("Connexion avec le serveur perdue !");
+    }
   }
 }

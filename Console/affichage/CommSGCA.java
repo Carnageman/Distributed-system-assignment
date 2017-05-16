@@ -21,7 +21,8 @@ public class CommSGCA {
       System.err.println("Erreur : " + excp.getMessage());
     }
   }
-  public Vector<Avion> getAvions() {
+  public Vector<Avion> getAvions() throws common.SGCATimeOutException {
+    int nbTry = 0;
     Vector<Avion> vectAvion = new Vector<Avion>();
     DatagramPacket packetReception = new DatagramPacket(new byte[50],50);
     DatagramPacket packetDemandeAvions = PacketsAffichage.makePacketDemandeAvions(adr,port,nbAvion);
@@ -35,6 +36,7 @@ public class CommSGCA {
       }
       try {
         while(true) { //Sortie quand il y a timeOut du receive
+          try {
           socket.receive(packetReception);
           if (packetReception.getLength() == 8) {
             nbAvion = java.nio.ByteBuffer.wrap(packetReception.getData(),4,4).getInt();
@@ -44,20 +46,23 @@ public class CommSGCA {
           } 
           if (packetReception.getLength() == 32) {
             vectAvion.add(Avion.fromBytes(packetReception.getData()));
+            if (vectAvion.size() == nbAvion) {
+              return vectAvion;
+            }
           }
         }
+        catch (java.net.SocketTimeoutException e) {
+          nbTry++;
+          if (nbTry > 10) {
+            throw new common.SGCATimeOutException();
+          } 
+          break; //Break du second tant que pour renvoyer un message
+        }
       }
-      catch (java.net.SocketTimeoutException excpSock) {
       }
       catch (java.io.IOException excp) {
         System.err.println("La socket a été fermée !");
         System.err.println("Erreur : " + excp.getMessage());
-      }
-      if (vectAvion.size() == nbAvion) {
-        return vectAvion;
-      }
-      else {
-        vectAvion.clear();
       }
     }
   }

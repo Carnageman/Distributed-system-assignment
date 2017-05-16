@@ -84,6 +84,7 @@ void* multicastManager() {
   addr.sin_addr.s_addr = htonl(INADDR_ANY);
   addr.sin_port = htons(PORT_MULTICAST);
   addrlen = sizeof(addr);
+  addr_serveur.sin_port = htons(1285);
 
   addr.sin_addr.s_addr = inet_addr(GROUP_MULTICAST);
   while (1) {
