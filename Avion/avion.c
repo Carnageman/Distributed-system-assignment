@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <time.h>
+#include <fcntl.h>
 #include "../Libs/avion.h"
 #include "../Libs/TCP_socket.h"
 
@@ -24,6 +25,9 @@ char numero_vol[6];
 // numéro de socket
 int sock;
 
+void changer_vitesse(int vitesse);
+void changer_cap(int cap);
+void changer_altitude(int altitude);
 /********************************
  ***  3 fonctions � impl�menter
  ********************************/
@@ -81,6 +85,7 @@ int ouvrir_communication()
       printf("Connexion TCP échouée !\n");
 			return 0; //Message erreur
 		}
+    fcntl(sock, F_SETFL, O_NONBLOCK); 
 	  return sock;
 }
 
@@ -95,7 +100,24 @@ int ouvrir_communication()
 	{
 	  // fonction � impl�menter qui envoie l'ensemble des caract�ristiques
 	  // courantes de l'avion au gestionnaire de vols
-	  if (write(sock,&numero_vol,sizeof(numero_vol)) == -1) {
+    struct Ordre o;
+    struct Avion a;
+    strcpy(a.numero_vol,numero_vol);
+    a.coord = coord;
+    a.dep = dep;
+    if (write(sock,&a,sizeof(struct Avion)) != sizeof(struct Avion)) {
+      perror("Erreur envoi de données de l'avion");
+      exit(4);
+    }
+    if (read(sock,&o,sizeof(struct Ordre)) == sizeof(struct Ordre)) {
+      printf("Ordre reçu !\n");
+      printf("%s : (%d,%d),%d\n",o.numero_vol,o.dep.cap,o.dep.vitesse,o.altitude);
+      changer_vitesse(o.dep.vitesse);
+      changer_cap(o.dep.cap);
+      changer_altitude(o.altitude);
+    }
+    sleep(PAUSE);
+	  /*if (write(sock,&numero_vol,sizeof(numero_vol)) == -1) {
 	    perror("envoyer_caracteristiques numero_vol");
 	    exit(4);
 	  }
@@ -112,7 +134,7 @@ int ouvrir_communication()
 	  if (write(sock,&dep,sizeof(dep)) == -1) {
 	    perror("envoyer_caracteristiques cap");
 	    exit(4);
-	  }
+	  }*/
 	}
 
 	/********************************
@@ -245,4 +267,5 @@ int main()
 
   // on se d�place une fois toutes les initialisations faites
   se_deplacer(err);
+  return 0;
 }

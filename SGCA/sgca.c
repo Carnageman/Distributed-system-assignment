@@ -102,8 +102,9 @@ void* avionInfoManager(int* sock) {
   int nb_octetsRead;
 	char message[TAILLEBUF];
   struct Avion a;
+  struct Ordre o;
   while (1) {
-    nb_octetsRead = read(socket_service,message,TAILLEBUF);		
+    /*nb_octetsRead = read(socket_service,message,TAILLEBUF);		
     if (nb_octetsRead <= 0) break;
 	  a.numero_vol[0] = message[0];
 	  a.numero_vol[1] = message[1];
@@ -116,8 +117,19 @@ void* avionInfoManager(int* sock) {
 	  memcpy(&a.coord,message,sizeof(message));
 	  nb_octetsRead = read(socket_service,message,TAILLEBUF);
     if (nb_octetsRead <= 0) break;
-	  memcpy(&a.dep,message,sizeof(message));
-	  ecrireAvion(a,rang);
+	  memcpy(&a.dep,message,sizeof(message));*/
+    if (read(socket_service,&a,sizeof(struct Avion)) != (sizeof(struct Avion))) {
+      break;
+    }
+    else {
+	    ecrireAvion(a,rang);
+      if ((getNewOrdre(&o,a.numero_vol)) == 1) {
+        if (write(socket_service,&o,sizeof(struct Ordre)) != sizeof(struct Ordre)) {
+          perror("Erreur, impossible d'envoyer l'ordre");
+          break;
+        }
+      }
+    }
 	}
   supprimerAvion(rang);
 	// on ferme les sockets
@@ -310,9 +322,10 @@ int main() {
   initialiserBase();
   initialiserBaseOrdre();
   jeuDeTestBase();
-  pthread_create(&thread1,NULL,multicastManager,NULL);
+  //pthread_create(&thread1,NULL,multicastManager,NULL);
   pthread_create(&thread2,NULL,consoleAffichageManager,NULL);
   pthread_create(&thread3,NULL,initialisationConnexionAvionManager,NULL);
+  multicastManager();
   while (1);
   //pthread_join(thread1,NULL);
 }
