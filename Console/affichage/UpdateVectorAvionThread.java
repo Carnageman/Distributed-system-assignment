@@ -27,6 +27,7 @@ public class UpdateVectorAvionThread extends Thread {
       vectAvion = comSGCA.getAvions();
       clearScreen();
       for (i=0;i<vectAvion.size();i++) {
+        System.out.println("**-------------------------------**");
         vectAvion.get(i).afficher_donnees();
       }
       try {

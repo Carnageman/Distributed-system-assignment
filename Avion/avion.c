@@ -41,8 +41,6 @@ int ouvrir_communication()
   socklen_t addrlen; 
   struct ip_mreq mreq;
   static struct sockaddr_in addr_serveur;
-  struct hostent *host_serveur;
-  char *ip;
   /* set up socket */
   sock = socket(AF_INET, SOCK_DGRAM, 0);
   if (sock < 0) {
@@ -71,19 +69,16 @@ int ouvrir_communication()
 		  exit(1);
 		}
     close(sock);
-	  ip = inet_ntoa(addr_serveur.sin_addr);
 	  sock = creerSocketTCP(0);
-	  if (sock == -1) return 0; //Message erreur
-	  host_serveur = gethostbyname(ip); //A modifier pour prendre en compte les args
-	  if (host_serveur == NULL) return 0; //Message erreur
-	  //bzero((char *) &addr_serveur,sizeof(addr_serveur));
-		addr_serveur.sin_family = AF_INET;
-		//addr_serveur.sin_port = htons(1285); ATTENTION J'AI CHANGE CA JE NE SAIS PAS SI CA VA TROP BIEN MARCHE OU NON//A modifier pour prendre en compte les args
-		//memcpy(&addr_serveur.sin_addr.s_addr,host_serveur->h_addr, host_serveur->h_length);
+	  if (sock == -1) {
+      perror("Erreur création de socket TCP !");
+      return -1; 
+    }
+	  addr_serveur.sin_family = AF_INET;
 		if (connect(sock,(struct sockaddr *)&addr_serveur,sizeof(struct sockaddr_in)) == -1) {
       perror("TCP : ");
       printf("Connexion TCP échouée !\n");
-			return 0; //Message erreur
+			return 0; 
 		}
     fcntl(sock, F_SETFL, O_NONBLOCK); 
 	  return sock;
@@ -110,32 +105,18 @@ int ouvrir_communication()
       exit(4);
     }
     if (read(sock,&o,sizeof(struct Ordre)) == sizeof(struct Ordre)) {
-      printf("Ordre reçu !\n");
-      printf("%s : (%d,%d),%d\n",o.numero_vol,o.dep.cap,o.dep.vitesse,o.altitude);
-      changer_vitesse(o.dep.vitesse);
-      changer_cap(o.dep.cap);
-      changer_altitude(o.altitude);
+      if (o.dep.vitesse >= 0) {
+        changer_vitesse(o.dep.vitesse);
+      }
+      if (o.dep.cap >= 0) {
+        changer_cap(o.dep.cap);
+      }
+      if (o.altitude >= 0) {
+        changer_altitude(o.altitude);
+      }
     }
     sleep(PAUSE);
-	  /*if (write(sock,&numero_vol,sizeof(numero_vol)) == -1) {
-	    perror("envoyer_caracteristiques numero_vol");
-	    exit(4);
-	  }
-
-    sleep(PAUSE);
-
-	  if (write(sock,&coord,sizeof(coord)) == -1) {
-	    perror("envoyer_caracteristiques coord");
-	    exit(4);
-	  }
-
-    sleep(PAUSE);
-
-	  if (write(sock,&dep,sizeof(dep)) == -1) {
-	    perror("envoyer_caracteristiques cap");
-	    exit(4);
-	  }*/
-	}
+  }
 
 	/********************************
 	 ***  Fonctions g�rant le d�placement de l'avion : ne pas modifier
@@ -202,9 +183,7 @@ void afficher_donnees()
 // recalcule la localisation de l'avion en fonction de sa vitesse et de son cap
 void calcul_deplacement()
 {
-  //float cosinus, sinus;
   float dep_x, dep_y;
-  //int nb;
 
   if (dep.vitesse < VITMIN)
     {
@@ -219,8 +198,6 @@ void calcul_deplacement()
       exit(3);
     }
 
-  //cosinus = cos(dep.cap * 2 * M_PI / 360);
-  //sinus = sin(dep.cap * 2 * M_PI / 360);
 
   dep_x = cos(dep.cap * 2 * M_PI / 360) * dep.vitesse * 10 / VITMIN;
   dep_y = sin(dep.cap * 2 * M_PI / 360) * dep.vitesse * 10 / VITMIN;
@@ -233,7 +210,6 @@ void calcul_deplacement()
   if ((dep_y > 0) && (dep_y < 1)) dep_y = 1;
   if ((dep_y < 0) && (dep_y > -1)) dep_y = -1;
 
-  //printf(" x : %f y : %f\n", dep_x, dep_y);
 
   coord.x = coord.x + (int)dep_x;
   coord.y = coord.y + (int)dep_y;

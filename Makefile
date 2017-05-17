@@ -53,7 +53,9 @@ clean:
 	rm Libs/TCP_socket.o
 	rm Libs/UDP_socket.o	
 	rm SGCA/baseDeDonnees.o
+	rm SGCA/gestionOrdre.o
 	rm sgca
 	rm avion
 	rm affichage.jar
+	rm controle.jar
 	rm classFiles/ -R

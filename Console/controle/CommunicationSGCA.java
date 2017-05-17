@@ -30,9 +30,7 @@ public class CommunicationSGCA {
           buffer = java.nio.ByteBuffer.wrap(packetReception.getData());
           if ((packetReception.getLength() == 8) && (buffer.getInt(0) == 56841)) { 
             reponse = buffer.getInt(4);
-            System.out.println(reponse);
             if (reponse == 0) {
-              System.out.println("Bien reçu !");
               break;
             }
             if (reponse == 1) { //Si l'avion n'existe pas dans la base

@@ -38,6 +38,7 @@ public class CommSGCA {
         while(true) { //Sortie quand il y a timeOut du receive
           try {
           socket.receive(packetReception);
+          nbTry = 0; //On a bien reçu un paquet, on remet les essais à 0
           if (packetReception.getLength() == 8) {
             nbAvion = java.nio.ByteBuffer.wrap(packetReception.getData(),4,4).getInt();
             if (nbAvion == 0) break;
@@ -55,7 +56,8 @@ public class CommSGCA {
           nbTry++;
           if (nbTry > 10) {
             throw new common.SGCATimeOutException();
-          } 
+          }
+          vectAvion.clear();
           break; //Break du second tant que pour renvoyer un message
         }
       }

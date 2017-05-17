@@ -63,7 +63,6 @@ void* multicastManager() {
   static struct sockaddr_in addr_serveur;
   struct sockaddr_in addr;
   int addrlen, sock, cnt;
-  //struct ip_mreq mreq;
   char hostname [30];
   gethostname(hostname, 30);
   serveur_host = (struct hostent*)gethostbyname((char*)hostname);
@@ -97,28 +96,12 @@ void* multicastManager() {
   }
 }
 
-void* avionInfoManager(int* sock) {
-  int socket_service = *sock;
+void* avionInfoManager(void* sock) {
+  int socket_service = *((int*)sock);
 	int rang = getNouveauRang();
-  int nb_octetsRead;
-	char message[TAILLEBUF];
   struct Avion a;
   struct Ordre o;
   while (1) {
-    /*nb_octetsRead = read(socket_service,message,TAILLEBUF);		
-    if (nb_octetsRead <= 0) break;
-	  a.numero_vol[0] = message[0];
-	  a.numero_vol[1] = message[1];
-    a.numero_vol[2] = message[2];
-    a.numero_vol[3] = message[3];
-    a.numero_vol[4] = message[4];
-    a.numero_vol[5] = message[5];
-	  nb_octetsRead = read(socket_service,message,TAILLEBUF);
-    if (nb_octetsRead <= 0) break;
-	  memcpy(&a.coord,message,sizeof(message));
-	  nb_octetsRead = read(socket_service,message,TAILLEBUF);
-    if (nb_octetsRead <= 0) break;
-	  memcpy(&a.dep,message,sizeof(message));*/
     if (read(socket_service,&a,sizeof(struct Avion)) != (sizeof(struct Avion))) {
       break;
     }
@@ -133,25 +116,17 @@ void* avionInfoManager(int* sock) {
     }
 	}
   supprimerAvion(rang);
-	// on ferme les sockets
+	// on ferme la socket
 	close(socket_service);
   return 0;
 }
 void* initialisationConnexionAvionManager() {
 	// adresse socket coté client
 	static struct sockaddr_in addr_client;
-	// adresse socket locale
-	static struct sockaddr_in addr_serveur;
 	// longueur adresse
 	socklen_t lg_addr;
 	// socket d'écoute et de service
 	int socket_ecoute, socket_service;
-	// buffer qui contiendra le message reçu
-	char message[TAILLEBUF];
-	// chaîne reçue du client
-	char *chaine_recue;
-	// nombre d'octets reçus ou envoyés
-	int nb_octetsRead = TAILLEBUF;
   pthread_t* thread;
 
 	socket_ecoute = creerSocketTCP(1285);
@@ -190,7 +165,6 @@ void* consoleAffichageManager() {
   int nbreAvionPaquet;
   struct Avion* tabAvion;
   int i;
-  int retour;
   struct Ordre ord;
   
   sock = creerSocketUDP(5842);
@@ -246,7 +220,6 @@ void* consoleAffichageManager() {
         break;
       case 24:
         convertPaquetToOrdre(buffer,&ord);
-        printf("%s : (%d,%d),%d\n",ord.numero_vol,ord.dep.cap,ord.dep.vitesse,ord.altitude);
         if (checkAvion(ord.numero_vol)) {
           if(putOrdre(ord) == 0) {
             paquetNbAvion(buffer,0);
@@ -274,13 +247,6 @@ void* consoleAffichageManager() {
       }
     }
   }
-}
-
-
-
-void* avionOrdreManager() {
-
-  return 0;
 }
 
 void jeuDeTestBase() {
@@ -319,14 +285,11 @@ void jeuDeTestBase() {
 int main() {
   pthread_t thread1;
   pthread_t thread2;
-  pthread_t thread3;
   initialiserBase();
   initialiserBaseOrdre();
   jeuDeTestBase();
-  //pthread_create(&thread1,NULL,multicastManager,NULL);
-  pthread_create(&thread2,NULL,consoleAffichageManager,NULL);
-  pthread_create(&thread3,NULL,initialisationConnexionAvionManager,NULL);
+  pthread_create(&thread1,NULL,consoleAffichageManager,NULL);
+  pthread_create(&thread2,NULL,initialisationConnexionAvionManager,NULL);
   multicastManager();
-  while (1);
-  //pthread_join(thread1,NULL);
+  return 0;
 }

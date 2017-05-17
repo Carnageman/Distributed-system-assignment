@@ -6,7 +6,7 @@ void initialiserBaseOrdre() {
   bddOrdre.nbOrdre = 0;
 }
 
-int retirerOrdre(int rang) {
+void retirerOrdre(int rang) {
   bddOrdre.tabOrdre[rang] = bddOrdre.tabOrdre[bddOrdre.nbOrdre - 1];
   bddOrdre.nbOrdre--;
 }
