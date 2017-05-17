@@ -13,9 +13,9 @@ struct baseDeDonnees bdd;
 int s;
 
 void initialiserBase();
-void ecrireAvion(struct Avion avion, int rang);
+void ecrireAvion(struct Avion avion);
 int lireAvions(struct Avion** tabAvionRes, int* nbAvion);
-void supprimerAvion(int rang);
+void supprimerAvion(char num_vol[]);
 int getNouveauRang();
 int getNbAvion();
 int checkAvion(char num_vol[]); //A FAIRE 

@@ -19,11 +19,21 @@ void initialiserBase() {
   s = 1;
 }
 
-void supprimerAvion(int rang) {
+/*void supprimerAvion(int rang) {
   entreeSC();
   bdd.tabAvion[rang] = bdd.tabAvion[bdd.nbAvion - 1];
   bdd.nbAvion--;
   sortieSC();
+}*/
+void supprimerAvion(char num_vol[]) {
+  int rang = checkAvion(num_vol);
+
+  if (rang != -1) {
+    entreeSC();
+    bdd.tabAvion[rang] = bdd.tabAvion[bdd.nbAvion - 1];
+    bdd.nbAvion--;
+    sortieSC();
+  }
 }
 
 int getNouveauRang() {
@@ -47,9 +57,31 @@ int getNouveauRang() {
   return bdd.nbAvion-1;
 }
 
-void ecrireAvion(struct Avion avion, int rang) {
+void ecrireAvion(struct Avion avion) {
+  int rang;
+  struct Avion* tabAux = NULL;
   entreeSC();
-  bdd.tabAvion[rang] = avion;
+  if (bdd.nbTab <= bdd.nbAvion) {
+    tabAux = malloc(sizeof(struct Avion) * (bdd.nbTab + 10));
+    if (tabAux == NULL) {
+      fprintf(stderr,"getNouveauRang : Erreur : allocation dynamique impossible.\n");
+    }
+    memcpy(tabAux,bdd.tabAvion,sizeof(struct Avion)*bdd.nbTab);
+    if (bdd.tabAvion != NULL) {
+      free(bdd.tabAvion);
+    }
+    bdd.tabAvion = tabAux;
+    bdd.nbTab += 10;
+  }
+  if ((rang = checkAvion(avion.numero_vol)) == -1) {
+    printf("Avion non existant, création... %s\n",avion.numero_vol);
+    bdd.tabAvion[bdd.nbAvion] = avion;
+    bdd.nbAvion++;
+  }
+  else {
+    printf("Avion déjà existant, écriture... %s\n",avion.numero_vol);
+    bdd.tabAvion[rang] = avion;
+  }
   sortieSC();
 }
 
@@ -85,7 +117,7 @@ int checkAvion(char num_vol[]) {
       i++;
     }
   }
-  return (trouve != -1);
+  return (trouve);
 }
 
 /*int main() {

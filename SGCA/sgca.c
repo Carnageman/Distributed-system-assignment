@@ -98,7 +98,14 @@ void* multicastManager() {
 
 void* avionInfoManager(void* sock) {
   int socket_service = *((int*)sock);
-	int rang = getNouveauRang();
+	//int rang = getNouveauRang();
+  char num_vol[6];
+  num_vol[0] = '\0';
+  num_vol[1] = '\0';
+  num_vol[2] = '\0';
+  num_vol[3] = '\0';
+  num_vol[4] = '\0';
+  num_vol[5] = '\0';
   struct Avion a;
   struct Ordre o;
   while (1) {
@@ -106,7 +113,10 @@ void* avionInfoManager(void* sock) {
       break;
     }
     else {
-	    ecrireAvion(a,rang);
+      if (num_vol[0] == '\0') {
+        strcpy(num_vol,a.numero_vol);
+      }
+	    ecrireAvion(a/*,rang*/);
       if ((getNewOrdre(&o,a.numero_vol)) == 1) {
         if (write(socket_service,&o,sizeof(struct Ordre)) != sizeof(struct Ordre)) {
           perror("Erreur, impossible d'envoyer l'ordre");
@@ -115,7 +125,8 @@ void* avionInfoManager(void* sock) {
       }
     }
 	}
-  supprimerAvion(rang);
+  //supprimerAvion(rang);
+  supprimerAvion(num_vol);
 	// on ferme la socket
 	close(socket_service);
   return 0;
@@ -183,7 +194,7 @@ void* consoleAffichageManager() {
       //Si il y a eu une erreur
         perror("Erreur lors de la réception du paquet UDP");
         exit(-1);
-      case 4:
+      case 4: // A RETIRER !!!!
       //Si un entier seul est recu (Requete pour obtenir le nbre d'avion)
         paquetNbAvion(buffer,getNbAvion());
         nb_octets = sendto(sock,buffer,8,0,(struct sockaddr*)&addr_client,lg);
@@ -196,7 +207,14 @@ void* consoleAffichageManager() {
         lireAvions(&tabAvion,&nombreAvions);
         nbreAvionPaquet = ((int*)buffer)[1];
         //Si deux entiers sont recu (Requete pour obtenir les avions en donnant le nbre d'avion)
-        if (nbreAvionPaquet == htonl(nombreAvions)) {
+        if (getNbAvion() == 0) {
+          paquetNbAvion(buffer,0);
+          nb_octets = sendto(sock,buffer,(sizeof(int)*2),0,(struct sockaddr*)&addr_client,lg);
+          if (nb_octets == -1) {
+            perror("Erreur lors de l'envoi d'un paquet UDP");
+          }
+        }
+        else if (nbreAvionPaquet == htonl(nombreAvions)) {
         //Envois des avions à la console
           for(i = 0; i < nombreAvions; i++) {
             paquetAvion(buffer,tabAvion[i]);
@@ -220,7 +238,7 @@ void* consoleAffichageManager() {
         break;
       case 24:
         convertPaquetToOrdre(buffer,&ord);
-        if (checkAvion(ord.numero_vol)) {
+        if (checkAvion(ord.numero_vol) != -1) {
           if(putOrdre(ord) == 0) {
             paquetNbAvion(buffer,0);
             nb_octets = sendto(sock,buffer,(sizeof(int)*2),0,(struct sockaddr*)&addr_client,lg);
@@ -264,8 +282,8 @@ void jeuDeTestBase() {
   a.coord.altitude = 589;
   a.dep.cap = 30;
   a.dep.vitesse = 250;
-  rang = getNouveauRang();
-  ecrireAvion(a,rang);
+  //rang = getNouveauRang();
+  ecrireAvion(a/*,rang*/);
 
   a.numero_vol[0] = 'C';
   a.numero_vol[1] = 'h';
@@ -278,8 +296,8 @@ void jeuDeTestBase() {
   a.coord.altitude = 120;
   a.dep.cap = 550;
   a.dep.vitesse = 500;
-  rang = getNouveauRang();
-  ecrireAvion(a,rang);
+  //rang = getNouveauRang();
+  ecrireAvion(a/*,rang*/);
 }
 
 int main() {
@@ -287,7 +305,7 @@ int main() {
   pthread_t thread2;
   initialiserBase();
   initialiserBaseOrdre();
-  jeuDeTestBase();
+  //jeuDeTestBase();
   pthread_create(&thread1,NULL,consoleAffichageManager,NULL);
   pthread_create(&thread2,NULL,initialisationConnexionAvionManager,NULL);
   multicastManager();

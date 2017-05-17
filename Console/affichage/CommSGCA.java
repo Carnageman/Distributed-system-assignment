@@ -41,7 +41,10 @@ public class CommSGCA {
           nbTry = 0; //On a bien reçu un paquet, on remet les essais à 0
           if (packetReception.getLength() == 8) {
             nbAvion = java.nio.ByteBuffer.wrap(packetReception.getData(),4,4).getInt();
-            if (nbAvion == 0) break;
+            if (nbAvion == 0) {
+              vectAvion.clear();
+              return vectAvion;
+            }
             packetDemandeAvions = PacketsAffichage.makePacketDemandeAvions(adr,port,nbAvion);
             socket.send(packetDemandeAvions);
           } 
