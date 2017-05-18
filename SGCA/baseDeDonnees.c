@@ -74,12 +74,10 @@ void ecrireAvion(struct Avion avion) {
     bdd.nbTab += 10;
   }
   if ((rang = checkAvion(avion.numero_vol)) == -1) {
-    printf("Avion non existant, création... %s\n",avion.numero_vol);
     bdd.tabAvion[bdd.nbAvion] = avion;
     bdd.nbAvion++;
   }
   else {
-    printf("Avion déjà existant, écriture... %s\n",avion.numero_vol);
     bdd.tabAvion[rang] = avion;
   }
   sortieSC();

@@ -204,6 +204,7 @@ void* consoleAffichageManager() {
         break;
     
       case 8:
+        tabAvion = NULL;
         lireAvions(&tabAvion,&nombreAvions);
         nbreAvionPaquet = ((int*)buffer)[1];
         //Si deux entiers sont recu (Requete pour obtenir les avions en donnant le nbre d'avion)
@@ -233,7 +234,7 @@ void* consoleAffichageManager() {
           }
         }
         if (tabAvion != NULL) {
-          free(tabAvion);
+          free(tabAvion); //lireAvions alloue tabAvion avec un malloc, il faut faire un free !
         }
         break;
       case 24:
