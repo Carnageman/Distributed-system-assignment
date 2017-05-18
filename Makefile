@@ -41,7 +41,11 @@ classFiles/controle/CommunicationSGCA.class : Console/controle/CommunicationSGCA
 	$(CJ) Console/controle/CommunicationSGCA.java
 classFiles/controle/NoFreeSpaceOrderException.class : Console/controle/NoFreeSpaceOrderException.java
 	$(CJ) Console/controle/NoFreeSpaceOrderException.java
-classFiles/controle/ControleMain.class : Console/controle/ControleMain.java classFiles/controle/AvionNotFoundException.class classFiles/controle/CommunicationSGCA.class
+classFiles/controle/ActionEnvoyer.class : Console/controle/ActionEnvoyer.java classFiles/controle/CommunicationSGCA.class
+	$(CJ) Console/controle/ActionEnvoyer.java
+classFiles/controle/ConsoleSwing.class : Console/controle/ConsoleSwing.java classFiles/controle/ActionEnvoyer.class
+	$(CJ) Console/controle/ConsoleSwing.java
+classFiles/controle/ControleMain.class : Console/controle/ControleMain.java classFiles/controle/AvionNotFoundException.class classFiles/controle/CommunicationSGCA.class classFiles/controle/ConsoleSwing.class
 	$(CJ) Console/controle/ControleMain.java
 	
 affichage.jar : classFiles/affichage/ConsoleAffichageMain.class

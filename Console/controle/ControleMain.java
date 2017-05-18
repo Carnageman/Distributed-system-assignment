@@ -8,6 +8,7 @@ public class ControleMain {
     int cap = -1;
     int vitesse = -1;
     boolean valide;
+    ConsoleSwing console;
     java.util.Scanner in = new java.util.Scanner(System.in);
     CommunicationSGCA comm;
     if (args.length != 1) {
@@ -15,9 +16,11 @@ public class ControleMain {
     }
     else {
       try {
-        comm = new CommunicationSGCA(java.net.InetAddress.getByName(args[0]),5842);
+      console = (new ConsoleSwing(java.net.InetAddress.getByName(args[0]),5842));
+      //try {
+        //comm = new CommunicationSGCA(java.net.InetAddress.getByName(args[0]),5842);
         /*Ping pour voir si le SGCA est connecté*/
-        try {
+        /*try {
           comm.envoiOrdre(new common.OrdreDeplacement("Pingu",0,0,0)); //NOOT NOOT
         }
         catch(controle.AvionNotFoundException e) {
@@ -86,7 +89,7 @@ public class ControleMain {
         }
         catch(common.SGCATimeOutException e) {
           System.out.println("Le SGCA ne répond pas !");
-        }
+        }*/
       }
       catch (java.net.UnknownHostException excp) {
         System.out.println("Le nom d'hôte est invalide !");
