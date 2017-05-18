@@ -36,7 +36,7 @@ public class OrdreDeplacement {
       buffer = java.nio.ByteBuffer.wrap(packet.getData());
       buffer.putInt(56841);
       buffer.put(numArray,0,5);
-      buffer.put((byte) 0);
+      buffer.put((byte) 0); //On doit rajouter 3 bytes pour car il y a un offset de 3 dans la structure C
       buffer.put((byte) 0);
       buffer.put((byte) 0);
       buffer.putInt(getCap());

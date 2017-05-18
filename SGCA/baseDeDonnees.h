@@ -16,7 +16,6 @@ void initialiserBase();
 void ecrireAvion(struct Avion avion);
 int lireAvions(struct Avion** tabAvionRes, int* nbAvion);
 void supprimerAvion(char num_vol[]);
-int getNouveauRang();
 int getNbAvion();
-int checkAvion(char num_vol[]); //A FAIRE 
+int checkAvion(char num_vol[]);
 #endif

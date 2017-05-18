@@ -41,7 +41,7 @@ int ouvrir_communication()
   socklen_t addrlen; 
   struct ip_mreq mreq;
   static struct sockaddr_in addr_serveur;
-  /* set up socket */
+  /*CREATION DE LA SOCKET UDP MULTICAST*/
   sock = socket(AF_INET, SOCK_DGRAM, 0);
   if (sock < 0) {
 	    perror("socket");
@@ -63,7 +63,7 @@ int ouvrir_communication()
 	    exit(1);
 	  }
 
-	  cnt = recvfrom(sock, &addr_serveur, sizeof(addr_serveur), 0,(struct sockaddr *) &addr, &addrlen);
+	  cnt = recvfrom(sock, &addr_serveur, sizeof(addr_serveur), 0,(struct sockaddr *) &addr, &addrlen); //Attente sur la socket UDP multicast pour l'adresse de la socket TCP d'écoute du SGCA
 		if (cnt < 0) {
 	    perror("recvfrom");
 		  exit(1);
@@ -75,12 +75,12 @@ int ouvrir_communication()
       return -1; 
     }
 	  addr_serveur.sin_family = AF_INET;
-		if (connect(sock,(struct sockaddr *)&addr_serveur,sizeof(struct sockaddr_in)) == -1) {
+		if (connect(sock,(struct sockaddr *)&addr_serveur,sizeof(struct sockaddr_in)) == -1) { //Connexion sur l'adresse reçu de la socket UDP multicast
       perror("TCP : ");
       printf("Connexion TCP échouée !\n");
 			return 0; 
 		}
-    fcntl(sock, F_SETFL, O_NONBLOCK); 
+    fcntl(sock, F_SETFL, O_NONBLOCK); //Passage en lecture non bloquante pour la socket TCP
 	  return sock;
 }
 
@@ -100,11 +100,12 @@ int ouvrir_communication()
     strcpy(a.numero_vol,numero_vol);
     a.coord = coord;
     a.dep = dep;
-    if (write(sock,&a,sizeof(struct Avion)) != sizeof(struct Avion)) {
+    if (write(sock,&a,sizeof(struct Avion)) != sizeof(struct Avion)) { //Ecriture des données de l'avion dans la socket TCP
       perror("Erreur envoi de données de l'avion");
       exit(4);
     }
-    if (read(sock,&o,sizeof(struct Ordre)) == sizeof(struct Ordre)) {
+    if (read(sock,&o,sizeof(struct Ordre)) == sizeof(struct Ordre)) { //Lecture d'ordre éventuel en mode lecture non bloquante
+      //Si un des attributs est négatifs, il n'est pas pris en compte
       if (o.dep.vitesse >= 0) {
         changer_vitesse(o.dep.vitesse);
       }

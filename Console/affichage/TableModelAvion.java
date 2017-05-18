@@ -25,6 +25,7 @@ public class TableModelAvion extends AbstractTableModel {
   }
 
   public Object getValueAt(int rowIndex, int columnIndex) {
+    try {
     Avion a = vector.get(rowIndex);
     switch (columnIndex) {
       case 0:
@@ -39,6 +40,9 @@ public class TableModelAvion extends AbstractTableModel {
         return a.getVitesse();
       case 5:
         return a.getCap();
+    }
+    }
+    catch (Exception e) {
     }
     return null;
   }

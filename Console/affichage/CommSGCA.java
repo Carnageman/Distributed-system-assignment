@@ -39,18 +39,18 @@ public class CommSGCA {
           try {
           socket.receive(packetReception);
           nbTry = 0; //On a bien reçu un paquet, on remet les essais à 0
-          if (packetReception.getLength() == 8) {
+          if (packetReception.getLength() == 8) { //Si le nouveau paquet est un ajustement du nouveau nombre d'avions
             nbAvion = java.nio.ByteBuffer.wrap(packetReception.getData(),4,4).getInt();
             if (nbAvion == 0) {
               vectAvion.clear();
               return vectAvion;
             }
-            packetDemandeAvions = PacketsAffichage.makePacketDemandeAvions(adr,port,nbAvion);
-            socket.send(packetDemandeAvions);
+            packetDemandeAvions = PacketsAffichage.makePacketDemandeAvions(adr,port,nbAvion); //Mise à jour du paquet avec le bon nombre d'avions
+            socket.send(packetDemandeAvions); //On renvoie la demande avec le nombre correct cette fois
           } 
-          if (packetReception.getLength() == 32) {
+          if (packetReception.getLength() == 32) { //Si le nouveau paquet est un avion
             vectAvion.add(Avion.fromBytes(packetReception.getData()));
-            if (vectAvion.size() == nbAvion) {
+            if (vectAvion.size() == nbAvion) { //Si on a reçu tout les avions
               return vectAvion;
             }
           }

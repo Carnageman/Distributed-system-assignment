@@ -23,16 +23,14 @@ classFiles/common/Avion.class : Console/common/Avion.java classFiles/
 	$(CJ) Console/common/Avion.java
 classFiles/common/OrdreDeplacement.class : Console/common/OrdreDeplacement.java
 	$(CJ) Console/common/OrdreDeplacement.java
-classFiles/common/SGCATimeOutException.class : Console/common/SGCATimeOutException.java
+classFiles/common/SGCATimeOutException.class : Console/common/SGCATimeOutException.java classFiles/
 	$(CJ) Console/common/SGCATimeOutException.java
 
 classFiles/affichage/PacketsAffichage.class : classFiles/common/Avion.class Console/affichage/PacketsAffichage.java
 	$(CJ) Console/affichage/PacketsAffichage.java
 classFiles/affichage/CommSGCA.class : classFiles/affichage/PacketsAffichage.class classFiles/common/Avion.class Console/affichage/CommSGCA.java classFiles/
 	$(CJ) Console/affichage/CommSGCA.java
-classFiles/affichage/UpdateVectorAvionThread.class : classFiles/affichage/CommSGCA.class classFiles/common/Avion.class classFiles/affichage/PacketsAffichage.class
-	$(CJ) Console/affichage/UpdateVectorAvionThread.java
-classFiles/affichage/ConsoleAffichageMain.class : classFiles/affichage/UpdateVectorAvionThread.class classFiles/common/SGCATimeOutException.class
+classFiles/affichage/ConsoleAffichageMain.class : classFiles/common/SGCATimeOutException.class classFiles/affichage/PacketsAffichage.class classFiles/affichage/CommSGCA.class classFiles/common/Avion.class
 	$(CJ) Console/affichage/ConsoleAffichageMain.java
 	
 classFiles/controle/AvionNotFoundException.class : Console/controle/AvionNotFoundException.java

@@ -40,7 +40,7 @@ public class Avion {
     Avion a;
     java.nio.ByteBuffer buffer = java.nio.ByteBuffer.wrap(array);
 
-    a = new Avion(new String(array,4,8),buffer.getInt(12),buffer.getInt(16),buffer.getInt(20),buffer.getInt(24),buffer.getInt(28));
+    a = new Avion(new String(array,4,8),buffer.getInt(12),buffer.getInt(16),buffer.getInt(20),buffer.getInt(24),buffer.getInt(28)); //Récupération des différents champs du paquet pour former l'objet avion
     return a;
   }
 

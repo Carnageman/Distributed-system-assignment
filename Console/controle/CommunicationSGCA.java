@@ -28,9 +28,9 @@ public class CommunicationSGCA {
           java.nio.ByteBuffer buffer;
           socket.receive(packetReception);
           buffer = java.nio.ByteBuffer.wrap(packetReception.getData());
-          if ((packetReception.getLength() == 8) && (buffer.getInt(0) == 56841)) { 
+          if ((packetReception.getLength() == 8) && (buffer.getInt(0) == 56841)) {  //Si le paquet contient bien 2 entiers et le premier est l'entier attendu
             reponse = buffer.getInt(4);
-            if (reponse == 0) {
+            if (reponse == 0) { //Si l'ordre a été pris en compte
               break;
             }
             if (reponse == 1) { //Si l'avion n'existe pas dans la base
