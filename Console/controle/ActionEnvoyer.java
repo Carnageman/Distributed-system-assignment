@@ -84,6 +84,10 @@ public class ActionEnvoyer implements java.awt.event.ActionListener {
 	  if (lancer) {
 		  try {
 			  comm.envoiOrdre(ordre);
+        nvol.setText("");
+        ca.setText("");
+        vi.setText("");
+        al.setText("");
 			  res.setText("Ordre envoyé et pris en compte");
 		  }
 		  catch(controle.AvionNotFoundException ex) {
