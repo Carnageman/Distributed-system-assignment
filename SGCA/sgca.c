@@ -268,7 +268,6 @@ void* consoleAffichageManager() {
 }
 
 void jeuDeTestBase() {
-  int rang;
   struct Avion a;
 
   a.numero_vol[0] = 'H';
